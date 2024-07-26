@@ -20,12 +20,29 @@ points = torch.tensor([[120.0,  30.0], # base
 path = pydiffvg.Path(num_control_points = num_control_points,
                      points = points,
                      is_closed = True)
+#Here the closed path is formed
 shapes = [path]
 path_group = pydiffvg.ShapeGroup(shape_ids = torch.tensor([0]),
                                  fill_color = torch.tensor([0.3, 0.6, 0.3, 1.0]))
 shape_groups = [path_group]
 scene_args = pydiffvg.RenderFunction.serialize_scene(\
     canvas_width, canvas_height, shapes, shape_groups)
+#Here color is applied
+
+#Now we will split the curve
+
+# Visibility function
+def visibility_function(t):
+    mod_t = t % 0.2
+    if mod_t < 0.1:
+        return 1 - 10 * mod_t
+    else:
+        return 0
+      
+# Defining the zeros of the visibility function
+zeros = zeros=[0.1, 0.3, 0.5, 0.7, 0.9]
+
+# Split Bezier curve at the zeros of the visibility function
 
 render = pydiffvg.RenderFunction.apply
 img = render(256, # width
