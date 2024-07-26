@@ -54,7 +54,6 @@ zeros = [0.1, 0.3, 0.5, 0.7, 0.9]
 
 # Update the path with visible points and render
 
-# Apply the visibility function to the path points
 
 
 
