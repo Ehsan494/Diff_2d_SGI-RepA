@@ -12,6 +12,7 @@ points = torch.tensor([[120.0,  30.0], # base
                        [150.0,  60.0], # control point
                        [ 90.0, 198.0], # control point
                        [ 60.0, 218.0]]) # base
+
 path = pydiffvg.Path(num_control_points = num_control_points,
                      points = points,
                      is_closed = False,
@@ -35,6 +36,27 @@ img = render(256, # width
 # The output image is in linear RGB space. Do Gamma correction before saving the image.
 pydiffvg.imwrite(img.cpu(), 'results/single_stroke/target.png', gamma=2.2)
 target = img.clone()
+
+# Visibility function
+def visibility_function(t):
+    mod_t = t % 0.2
+    if mod_t < 0.1:
+        return 1 - 10 * mod_t
+    else:
+        return 0
+
+# Predefined zeros of the visibility function
+zeros = [0.1, 0.3, 0.5, 0.7, 0.9]
+
+# Split Bezier curve at the zeros of the visibility function
+
+# Apply the visibility function to the path points
+
+# Update the path with visible points and render
+
+# Apply the visibility function to the path points
+
+
 
 # Move the path to produce initial guess
 # normalize points for easier learning rate
