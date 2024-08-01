@@ -40,17 +40,71 @@ target = img.clone()
 # Visibility function
 def visibility_function(t):
     mod_t = t % 0.2
+    mod_t = round(mod_t, 2)
     if mod_t < 0.1:
         return 1 - 10 * mod_t
-    else:
+    elif mod_t== 0.1:
         return 0
+    else:
+        return -1
 
-# Predefined zeros of the visibility function
-zeros = [0.1, 0.3, 0.5, 0.7, 0.9]
+# Predefined zeros of the visibility function (need to be coded - last task)
+t = [0.1,0.3, 0.5, 0.7, 0.9]
+
 
 # Split Bezier curve at the zeros of the visibility function
+def split_bezier_at_T(control_points,t):
+    """
+    split_bezier splits a Bézier curve at multiple parameter values.
+    Inputs:
+      - controlPoints: An n x 2 matrix where each row represents a control point.
+      - t: A vector of parameter values at which to split the curve.
+    Outputs:
+      - left: Control points of the left segment.
+      - right: Control points of right segment.
+    """
+    n = control_points.shape[0] # Number of control points
+    left = torch.zeros(n, 2) # Initialize left segment
+    right = torch.zeros(n, 2) # Initialize right segment
+    
+    points=control_points.clone()
 
-# Apply the visibility function to the path points
+    for r in range(n):
+         left[r, :] = points[0, :]
+         for i in range(n - r-1):
+                points[i, :] = (1 - t) * points[i, :] + t * points[i + 1, :] #Interpolation
+         right[r, :] = points[n-r-1, :] # The last point of current segment
+
+    right= torch.flipud(right)
+
+    return [left,right]
+
+def split_bezier(control_points, tValues):
+    """
+    split_bezier splits a Bézier curve at multiple parameter values.
+    Inputs:
+      - control_points: An n x 2 matrix where each row represents a control point.
+      - t_values: A vector of parameter values at which to split the curve.
+    Outputs:
+      - segments: A list containing the control points of the resulting curve segments.
+    """
+    # Sort the parameter values to ensure correct sequential splitting
+    tValues = np.sort(tValues)
+    # Initialize a list to hold the control points of the split segments
+    segments = []
+    remaining_points = torch.clone(control_points)
+    for t in tValues:
+         # Split the curve at t
+         [left, right] = split_bezier_at_T(remaining_points, t)
+    
+        # Store the left segment
+         segments.append(left)  
+         remaining_points= right
+    segments.append(remaining_points)
+
+    return segments
+
+# Select the visible segments
 
 # Update the path with visible points and render
 
