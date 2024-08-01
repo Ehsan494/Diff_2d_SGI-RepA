@@ -52,7 +52,7 @@ def visibility_function(t):
 t = [0.1,0.3, 0.5, 0.7, 0.9]
 
 
-# Split Bezier curve at the zeros of the visibility function
+# Split Bezier curve at the zeros of the visibility function 
 def split_bezier_at_T(control_points,t):
     """
     split_bezier splits a Bézier curve at multiple parameter values.
