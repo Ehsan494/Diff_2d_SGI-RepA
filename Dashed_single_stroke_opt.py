@@ -70,7 +70,7 @@ def split_bezier_at_T(control_points,t):
     right = torch.zeros(n, 2) # Initialize right segment
 
     points=control_points.clone()
-
+    
     for r in range(n):
          left[r, :] = points[0, :]
          for i in range(n - r-1):
@@ -163,8 +163,8 @@ img = render(256, # width
              None, # background_image
              *scene_args)
 # The output image is in linear RGB space. Do Gamma correction before saving the image.
-pydiffvg.imwrite(img.cpu(), 'results/vis_single_stroke/tareget.png', gamma=2.2)
-segment = img.clone()
+pydiffvg.imwrite(img.cpu(), 'results/vis_single_stroke/target.png', gamma=2.2)
+target = img.clone()
 
 
 
@@ -237,7 +237,7 @@ for t in range(200):
     # Save the intermediate render.
     pydiffvg.imwrite(img.cpu(), 'results/vis_single_stroke/iter_{}.png'.format(t), gamma=2.2)
     # Compute the loss function. Here it is L2.
-    loss = (img - segment).pow(2).sum()
+    loss = (img - target).pow(2).sum()
     print('loss:', loss.item())
 
     # Backpropagate the gradients.
