@@ -25,31 +25,18 @@ scene_args = pydiffvg.RenderFunction.serialize_scene(\
     canvas_width, canvas_height, shapes, shape_groups)
 
 
-
-render = pydiffvg.RenderFunction.apply
-img = render(256, # width
-             256, # height
-             2,   # num_samples_x
-             2,   # num_samples_y
-             0,   # seed
-             None, # background_image
-             *scene_args)
-# The output image is in linear RGB space. Do Gamma correction before saving the image.
-pydiffvg.imwrite(img.cpu(), 'results/vis_single_stroke/target.png', gamma=2.2)
-target = img.clone()
-
-
 # Visibility function
 def visibility_function(t):
     sin_t = np.sin(10*t)
     sin_t= round(sin_t,2)
     return sin_t
 
-
 t_samples = np.arange(0,1.01,0.01)
 num_samples= len(t_samples)
 a_values = np.array([visibility_function(t) for t in t_samples])
-#print(num_samples)
+
+
+
 # Split Bezier curve at the zeros of the visibility function
 def split_bezier_at_T(control_points,t):
     """
