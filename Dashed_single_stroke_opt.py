@@ -24,18 +24,35 @@ shape_groups = [path_group]
 scene_args = pydiffvg.RenderFunction.serialize_scene(\
     canvas_width, canvas_height, shapes, shape_groups)
 
-
 # Visibility function
 def visibility_function(t):
     sin_t = np.sin(10*t)
     sin_t= round(sin_t,2)
     return sin_t
 
-t_samples = np.arange(0,1.01,0.01)
-num_samples= len(t_samples)
-a_values = np.array([visibility_function(t) for t in t_samples])
+# Finding the zeros of the Visibility function
+def find_zeros ():
+    t_samples = np.arange(0,1.01,0.01)
+    num_samples= len(t_samples)
+    a_values = np.array([visibility_function(t) for t in t_samples])
+    zeros= []
 
-
+    for i in range(num_samples-1):
+        if abs(a_values [i])<1e-10:
+            zeros.append(t_samples[i])
+        elif abs(a_values[i+1])< 1e-10:
+            zeros.append(t_samples[i+1])
+        elif a_values[i] *a_values[i+1] <0:
+            # when sign change detected, compute the zero using linear interpolation
+            t1 = t_samples [i]
+            t2 = t_samples [i+1]
+            a1 = a_values[i]
+            a2 = a_values [i+1]
+            # Linear interpolation to find the zero 
+            zero = t1 -a1*(t2-t1)/ (a2-a1)
+            #zero= np.interp(0, [a1, a2], [t1, t2])
+            zeros.append(zero)
+    return zeros
 
 # Split Bezier curve at the zeros of the visibility function
 def split_bezier_at_T(control_points,t):
@@ -89,15 +106,7 @@ def split_bezier(control_points, tValues):
 
     return segments
 
-# Define the parameter values at which to split the curve
-controlPoints = torch.tensor([[120.0,  30.0], # base
-                              [150.0,  60.0], # control point
-                              [ 90.0, 198.0], # control point
-                              [ 60.0, 218.0]    
-])
-# Define the parameter values at which to split the curve
-
-
+# Selecting the visible segments
 def split_separate_path(controlPoints):
     zeros=[]
     even_segments= []
@@ -139,13 +148,6 @@ def split_separate_path(controlPoints):
         i+=1
     return shapes, shape_groups
 
-
-controlPoints = torch.tensor([[120.0,  30.0], # base
-                              [150.0,  60.0], # control point
-                              [ 90.0, 198.0], # control point
-                              [ 60.0, 218.0]    
-])
-
 [shapes,shape_groups] = split_separate_path(controlPoints)    
 
 scene_args = pydiffvg.RenderFunction.serialize_scene(\
@@ -161,13 +163,13 @@ img = render(256, # width
              None, # background_image
              *scene_args)
 # The output image is in linear RGB space. Do Gamma correction before saving the image.
-pydiffvg.imwrite(img.cpu(), 'results/vis_single_stroke/segments_with_even15.png', gamma=2.2)
+pydiffvg.imwrite(img.cpu(), 'results/vis_single_stroke/tareget.png', gamma=2.2)
 segment = img.clone()
 
 
 
 # Move the path to produce initial guess
-# normalize points for easier learning rate
+# Normalize points for easier learning rate
 points_n = torch.tensor([[100.0/256.0,  40.0/256.0], # base
                          [155.0/256.0,  65.0/256.0], # control point
                          [100.0/256.0, 180.0/256.0], # control point
@@ -199,7 +201,6 @@ def find_zeros ():
             a2 = a_values [i+1]
             # Linear interpolation to find the zero 
             zero = t1 -a1*(t2-t1)/ (a2-a1)
-            #zero= np.interp(0, [a1, a2], [t1, t2])
             zeros.append(zero)
 
 scene_args = pydiffvg.RenderFunction.serialize_scene(\
@@ -212,6 +213,7 @@ img = render(256, # width
              None, # background_image
              *scene_args)
 pydiffvg.imwrite(img.cpu(), 'results/vis_single_stroke/init.png', gamma=2.2)
+
 # Optimize
 optimizer = torch.optim.Adam([points_n, stroke_color, stroke_width_n], lr=1e-2)
 # Run 200 Adam iterations.
